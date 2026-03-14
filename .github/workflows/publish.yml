@@ -1,0 +1,130 @@
+name: Publish to npm
+
+# Trigger: create a GitHub Release (which creates a git tag).
+# The release title/body become the changelog entry on GitHub.
+# The git tag must match the version in package.json.
+on:
+  release:
+    types: [published]
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # 1. Validate — make sure tag matches package.json version
+  # ──────────────────────────────────────────────────────────
+  validate:
+    name: Validate Release Tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches package.json
+        run: |
+          TAG="${GITHUB_REF_NAME}"            # e.g. v0.1.0
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          EXPECTED="v${PKG_VERSION}"
+          if [ "$TAG" != "$EXPECTED" ]; then
+            echo "::error::Tag '$TAG' does not match package.json version '$EXPECTED'"
+            echo "Update package.json to match the release tag, or re-tag."
+            exit 1
+          fi
+          echo "Tag $TAG matches package.json version $PKG_VERSION"
+
+  # ──────────────────────────────────────────────────────────
+  # 2. Build — lint, compile, type-check
+  # ──────────────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  # ──────────────────────────────────────────────────────────
+  # 3. Verify examples — make sure examples still compile
+  # ──────────────────────────────────────────────────────────
+  verify-examples:
+    name: Verify Examples Build
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Download library build
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - run: npm ci
+
+      - name: Build examples
+        working-directory: examples
+        run: |
+          npm install
+          npx vite build
+
+  # ──────────────────────────────────────────────────────────
+  # 4. Publish — push to npm with provenance
+  # ──────────────────────────────────────────────────────────
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    needs: [build, verify-examples]
+    environment: npm                          # GitHub environment for protection rules
+    permissions:
+      contents: read
+      id-token: write                         # required for npm provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - run: npm ci
+
+      - name: Publish with provenance
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Summary
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "## Published @quantumwake/kgraph@${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- npm: https://www.npmjs.com/package/@quantumwake/kgraph/v/${VERSION}" >> $GITHUB_STEP_SUMMARY
+          echo "- GitHub: ${{ github.event.release.html_url }}" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,66 @@
+{
+  "name": "@quantumwake/kgraph",
+  "version": "0.1.0",
+  "description": "A lightweight, zero-dependency graph canvas for React. Drop-in replacement for ReactFlow with a minimal API surface.",
+  "license": "MIT",
+  "author": "QuantumWake",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quantumwake/kgraph.git"
+  },
+  "keywords": [
+    "react",
+    "graph",
+    "canvas",
+    "node-editor",
+    "flow",
+    "diagram",
+    "reactflow",
+    "kgraph"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run build",
+    "release": "npm run lint && npm run build && npm publish --access public",
+    "release:dry": "npm run lint && npm run build && npm publish --access public --dry-run",
+    "version:patch": "npm version patch && npm run release",
+    "version:minor": "npm version minor && npm run release",
+    "version:major": "npm version major && npm run release"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0"
+  }
+}

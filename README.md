@@ -4,6 +4,8 @@ A lightweight, zero-dependency React graph canvas. Build node-based editors, pip
 
 If you've used ReactFlow, you'll feel right at home. If you haven't, you'll be up and running in 5 minutes.
 
+![kgraph example](example1.png)
+
 ## Why KGraph?
 
 | | ReactFlow | KGraph |
