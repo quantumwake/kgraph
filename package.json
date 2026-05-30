@@ -1,6 +1,6 @@
 {
   "name": "@quantumwake/kgraph",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "A lightweight, zero-dependency graph canvas for React. Drop-in replacement for ReactFlow with a minimal API surface.",
   "license": "MIT",
   "author": "QuantumWake",
@@ -32,6 +32,16 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./ism": {
+      "import": {
+        "types": "./dist/ism/index.d.ts",
+        "default": "./dist/ism/index.js"
+      },
+      "require": {
+        "types": "./dist/ism/index.d.cts",
+        "default": "./dist/ism/index.cjs"
+      }
     }
   },
   "files": [
@@ -53,13 +63,20 @@
   },
   "peerDependencies": {
     "react": ">=17.0.0",
-    "react-dom": ">=17.0.0"
+    "react-dom": ">=17.0.0",
+    "lucide-react": ">=0.4.0"
+  },
+  "peerDependenciesMeta": {
+    "lucide-react": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "lucide-react": "^0.563.0",
     "tsup": "^8.4.0",
     "typescript": "^5.7.0"
   }

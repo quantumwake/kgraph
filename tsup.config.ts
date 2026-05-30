@@ -1,12 +1,13 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-    entry: ['src/index.ts'],
+    entry: ['src/index.ts', 'src/ism/index.ts'],
     format: ['esm', 'cjs'],
     dts: true,
     sourcemap: true,
     clean: true,
-    external: ['react', 'react-dom'],
+    // code-split so the ism addon shares the core chunk instead of duplicating it
+    splitting: true,
+    external: ['react', 'react-dom', 'lucide-react'],
     treeshake: true,
-    splitting: false,
 });
