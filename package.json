@@ -1,6 +1,6 @@
 {
   "name": "@quantumwake/kgraph",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A lightweight, zero-dependency graph canvas for React. Drop-in replacement for ReactFlow with a minimal API surface.",
   "license": "MIT",
   "author": "QuantumWake",
