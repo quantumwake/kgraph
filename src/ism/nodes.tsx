@@ -100,18 +100,33 @@ export function StudioNode({ data, selected }: NodeComponentProps) {
 
     if (d.collapsed) {
         return (
-            <div className="group relative flex items-center justify-center rounded-lg" style={{ width: NODE_COLLAPSED, height: NODE_COLLAPSED, ...shellStyle }} title={`${d.typeLabel ?? ''} · ${title}`}>
-                {HANDLES.map((h) => (
-                    <Handle key={`${h.type}-${h.position}`} id={h.id} type={h.type} position={h.position} style={hiddenHandle} />
-                ))}
-                <Icon className="h-5 w-5" style={{ color: cfg.accent }} />
-                <button
-                    onClick={toggle}
-                    title="Expand"
-                    className="absolute right-0.5 top-0.5 hidden rounded p-0.5 text-slate-400 hover:bg-white/10 hover:text-slate-100 group-hover:block"
+            <div className="group relative" style={{ width: NODE_COLLAPSED, height: NODE_COLLAPSED }}>
+                <div className="relative flex h-full w-full items-center justify-center rounded-lg" style={shellStyle} title={`${d.typeLabel ?? ''} · ${title}`}>
+                    {HANDLES.map((h) => (
+                        <Handle key={`${h.type}-${h.position}`} id={h.id} type={h.type} position={h.position} style={hiddenHandle} />
+                    ))}
+                    <Icon className="h-5 w-5" style={{ color: cfg.accent }} />
+                    <button
+                        onClick={toggle}
+                        title="Expand"
+                        className="absolute right-0.5 top-0.5 hidden rounded p-0.5 text-slate-400 hover:bg-white/10 hover:text-slate-100 group-hover:block"
+                    >
+                        <Plus className="h-3 w-3" />
+                    </button>
+                </div>
+                <div
+                    className="pointer-events-none absolute left-1/2 top-full mt-1 w-44 -translate-x-1/2 text-center leading-tight opacity-50 transition-opacity duration-200 group-hover:opacity-100"
+                    title={`${d.typeLabel ?? ''} · ${title}`}
                 >
-                    <Plus className="h-3 w-3" />
-                </button>
+                    <div className="break-words text-[10px] font-medium" style={{ color: '#e2e8f0' }}>
+                        {title}
+                    </div>
+                    {d.typeLabel ? (
+                        <div className="break-words text-[9px] uppercase tracking-wide" style={{ color: cfg.accent }}>
+                            {d.typeLabel}
+                        </div>
+                    ) : null}
+                </div>
             </div>
         );
     }
