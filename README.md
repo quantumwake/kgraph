@@ -136,6 +136,21 @@ const DashedEdge: React.FC<EdgeComponentProps> = (props) => {
 
 Arrow markers (`#kgraph-arrow` and `#kgraph-arrow-selected`) are defined automatically by KGraphCanvas.
 
+## Bands, groups, routing, persisted positions
+
+Four generic pieces for a canvas that stays readable as it grows (added in 0.3.0):
+
+- **`layoutBands({ bands, width, x, y })`** — a banded auto-layout: items grouped by a key, each group a labelled band stacked down one column, so kinds never interleave. Returns item positions and the band frames; a `collapsed` band keeps only its header.
+- **`CollapsibleGroupNode`** — the band as a node: a header strip with a chevron (`data.onToggle`), a label, a count and a subtitle; the frame when `data.open`, a chip when collapsed. Lay the group's members inside it and hide them while it is collapsed.
+- **`usePersistedPositions(key, parentOf)`** — the viewer drags nodes, the hook remembers where (localStorage, per `key`), `apply(nodes)` merges the overrides onto the computed layout, `reset()` forgets them. Children follow their parent: a node with no override of its own moves by the delta its nearest overridden ancestor was dragged (`parentOf` names the parent).
+- **`routeEdge` / `LabeledEdge` with `route: 'auto'` and `obstacles`** — an edge that goes around nodes instead of through them: a bezier when it is clear, else an orthogonal channel or a loop around the obstacles, rounded corners; when nothing is clear the edge dims and shows its label only on hover. `nodeRects(nodes, skip)` builds the obstacle list.
+
+```tsx
+const layout = layoutBands({ bands: [{ key: 'people', label: 'people', items: people.map((p) => ({ id: p.id, height: 52 })) }], width: 220, x: 300 })
+const positions = usePersistedPositions('board:' + boardId, (id) => parents[id])
+<KGraphCanvas nodes={positions.apply(nodes)} edges={edges} onNodesChange={positions.onNodesChange} nodesDraggable />
+```
+
 ## Hooks
 
 ### `useKGraph()`

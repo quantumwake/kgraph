@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { EdgeComponentProps } from './types';
 import { getBezierPath } from './bezier';
+import { routeEdge, Rect } from './routing';
 
 /**
  * LabeledEdge — a styled, optionally labelled bezier edge driven by `edge.data`,
@@ -10,6 +11,10 @@ import { getBezierPath } from './bezier';
  * Labels are the crowding problem on a dense canvas: `labelMode` decides when
  * the pill is drawn — always, only while hovered or selected, only while
  * selected, or never. `dim` fades an edge that is outside the current focus.
+ *
+ * With `route: 'auto'` and `obstacles` (the rects of the other nodes) the
+ * edge goes AROUND nodes instead of through them (see routing.ts); when no
+ * clear path exists it dims itself and shows its label only on hover.
  */
 export type LabelMode = 'always' | 'hover' | 'selected' | 'never';
 
@@ -30,6 +35,12 @@ export interface LabeledEdgeData {
     /** Extra class on the visible path (e.g. a flow animation). */
     className?: string;
     onClick?: (e: React.MouseEvent) => void;
+    /** 'auto' routes around `obstacles`; default 'bezier'. */
+    route?: 'bezier' | 'auto';
+    /** Node rects the edge must not cross (its own ends excluded). */
+    obstacles?: Rect[];
+    /** Clearance from obstacles (default 6). */
+    margin?: number;
 }
 
 const DEFAULT_STROKE = '#8b5cf6';
@@ -41,17 +52,25 @@ export const LabeledEdge: React.FC<EdgeComponentProps> = ({
 }) => {
     const [hover, setHover] = useState(false);
     const d = (data || {}) as LabeledEdgeData;
-    const [path, lx, ly] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+    const obstacles = d.route === 'auto' ? d.obstacles : undefined;
+    const { path, labelX: lx, labelY: ly, clear } = useMemo(() => {
+        if (!obstacles) {
+            const [p, x, y] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+            return { path: p, labelX: x, labelY: y, clear: true };
+        }
+        return routeEdge({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, obstacles, margin: d.margin });
+    }, [sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, obstacles, d.margin]);
     const isSelected = !!(selected || d.selected);
     const stroke = isSelected ? (d.selectedStroke || DEFAULT_SELECTED) : (d.stroke || DEFAULT_STROKE);
     const width = (d.width ?? 1.4) + (isSelected ? 1 : 0);
-    const mode: LabelMode = d.labelMode || 'always';
+    // A blocked edge (no clear route) steps back: dimmed, label on hover.
+    const mode: LabelMode = !clear && (d.labelMode || 'always') === 'always' ? 'hover' : (d.labelMode || 'always');
     const showLabel = !!d.label && (
         mode === 'always'
         || (mode === 'hover' && (hover || isSelected))
         || (mode === 'selected' && isSelected)
     );
-    const opacity = d.dim && !hover && !isSelected ? 0.3 : 1;
+    const opacity = (d.dim || !clear) && !hover && !isSelected ? 0.3 : 1;
     const clickable = !!d.onClick;
     const labelW = d.label ? d.label.length * 6.4 + 16 : 0;
 

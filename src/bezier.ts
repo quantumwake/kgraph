@@ -55,7 +55,7 @@ function calculateControlOffset(distance: number, curvature: number): number {
     return curvature * 25 * Math.sqrt(-distance);
 }
 
-function getControlWithCurvature(
+export function getControlWithCurvature(
     pos: HandlePosition,
     x1: number,
     y1: number,
