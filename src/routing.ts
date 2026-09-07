@@ -31,6 +31,8 @@ export interface RouteOptions {
     margin?: number;
     /** Corner radius of the detours (default 8). */
     radius?: number;
+    /** Shifts the preferred channel by lane × 10px so parallel edges fan out. */
+    lane?: number;
 }
 
 export interface Route {
@@ -152,13 +154,14 @@ function candidates(o: RouteOptions, obstacles: Rect[]): Pt[][] {
     const top = Math.min(S[1], T[1]);
     const bottom = Math.max(S[1], T[1]);
 
+    const shift = (o.lane || 0) * 10;
     if (horizontal(o.sourcePosition)) {
-        const mid = (S[0] + T[0]) / 2;
+        const mid = (S[0] + T[0]) / 2 + shift;
         const xs = [mid];
         for (let x = lo + 16; x <= hi - 16; x += 16) xs.push(x);
         for (const x of xs) out.push([S, [x, S[1]], [x, T[1]], T]);
     } else {
-        const mid = (S[1] + T[1]) / 2;
+        const mid = (S[1] + T[1]) / 2 + shift;
         const ys = [mid];
         for (let y = top + 16; y <= bottom - 16; y += 16) ys.push(y);
         for (const y of ys) out.push([S, [S[0], y], [T[0], y], T]);

@@ -64,6 +64,24 @@ const NodeWrapper: React.FC<NodeWrapperProps> = ({
             let hx = node.position.x;
             let hy = node.position.y;
 
+            // Where the handle actually sits (a host may place it off the
+            // node's midline, e.g. on a group's header); the rects are in
+            // screen space, so divide the viewport zoom back out.
+            const hr = (el as HTMLElement).getBoundingClientRect();
+            const wr = wrapperRef.current!.getBoundingClientRect();
+            const z = zoomRef.current || 1;
+            if (hr.width > 0 && wr.width > 0) {
+                registerHandle({
+                    nodeId: node.id,
+                    handleId,
+                    type: handleType,
+                    position: handlePosition,
+                    x: hx + (hr.left + hr.width / 2 - wr.left) / z,
+                    y: hy + (hr.top + hr.height / 2 - wr.top) / z,
+                });
+                return;
+            }
+
             switch (handlePosition) {
                 case 'top':
                     hx += nodeW / 2;

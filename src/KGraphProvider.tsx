@@ -31,6 +31,10 @@ export const KGraphProvider: React.FC<KGraphProviderProps> = ({
     const [viewport, setViewport] = useState<KGraphViewport>(initialViewport);
     const containerRef = useRef<HTMLDivElement>(null);
     const handlesRef = useRef<Map<string, HandleInfo>>(new Map());
+    // Handles register from effects and resize observers; when one MOVES
+    // (a node changed size, a group folded) the edges must redraw, so a
+    // changed registration bumps this version and the context re-renders.
+    const [handleVersion, setHandleVersion] = useState(0);
 
     const screenToCanvasPosition = useCallback((screenX: number, screenY: number) => {
         const rect = containerRef.current?.getBoundingClientRect();
@@ -142,7 +146,12 @@ export const KGraphProvider: React.FC<KGraphProviderProps> = ({
     }, [minZoom, maxZoom]);
 
     const registerHandle = useCallback((info: HandleInfo) => {
-        handlesRef.current.set(`${info.nodeId}:${info.handleId}`, info);
+        const key = `${info.nodeId}:${info.handleId}`;
+        const prev = handlesRef.current.get(key);
+        handlesRef.current.set(key, info);
+        if (!prev || prev.x !== info.x || prev.y !== info.y || prev.position !== info.position) {
+            setHandleVersion((v) => v + 1);
+        }
     }, []);
 
     const unregisterHandle = useCallback((nodeId: string, handleId: string) => {
@@ -173,7 +182,7 @@ export const KGraphProvider: React.FC<KGraphProviderProps> = ({
         containerRef,
         nodes,
         edges,
-    }), [viewport, screenToCanvasPosition, canvasToScreenPosition, fitView, zoomIn, zoomOut, zoomTo, registerHandle, unregisterHandle, getHandlePosition, getAllHandles, nodes, edges]);
+    }), [viewport, screenToCanvasPosition, canvasToScreenPosition, fitView, zoomIn, zoomOut, zoomTo, registerHandle, unregisterHandle, getHandlePosition, getAllHandles, nodes, edges, handleVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <KGraphContext.Provider value={value}>

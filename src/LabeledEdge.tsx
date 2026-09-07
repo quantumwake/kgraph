@@ -41,6 +41,8 @@ export interface LabeledEdgeData {
     obstacles?: Rect[];
     /** Clearance from obstacles (default 6). */
     margin?: number;
+    /** Fans parallel routed edges out: the preferred channel shifts by lane × 10px. */
+    lane?: number;
 }
 
 const DEFAULT_STROKE = '#8b5cf6';
@@ -58,8 +60,8 @@ export const LabeledEdge: React.FC<EdgeComponentProps> = ({
             const [p, x, y] = getBezierPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
             return { path: p, labelX: x, labelY: y, clear: true };
         }
-        return routeEdge({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, obstacles, margin: d.margin });
-    }, [sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, obstacles, d.margin]);
+        return routeEdge({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, obstacles, margin: d.margin, lane: d.lane });
+    }, [sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, obstacles, d.margin, d.lane]);
     const isSelected = !!(selected || d.selected);
     const stroke = isSelected ? (d.selectedStroke || DEFAULT_SELECTED) : (d.stroke || DEFAULT_STROKE);
     const width = (d.width ?? 1.4) + (isSelected ? 1 : 0);
