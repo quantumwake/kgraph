@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useMemo } from 'react';
-import { KGraphContextValue, KGraphViewport, HandleInfo, KGraphNode, KGraphEdge } from './types';
+import { KGraphContextValue, KGraphViewport, HandleInfo, KGraphNode, KGraphEdge, FitViewOptions } from './types';
 
 const KGraphContext = createContext<KGraphContextValue | null>(null);
 
@@ -48,15 +48,22 @@ export const KGraphProvider: React.FC<KGraphProviderProps> = ({
         return { x, y };
     }, [viewport]);
 
-    const fitView = useCallback((options?: { padding?: number }) => {
+    // fitView frames the whole graph, or — with `nodes` — just those ids
+    // (focus one member, one cluster). `maxZoom` caps the zoom below the
+    // canvas maximum so a small subset is not blown up past legibility.
+    const fitView = useCallback((options?: FitViewOptions) => {
         if (nodes.length === 0) return;
         const rect = containerRef.current?.getBoundingClientRect();
         if (!rect) return;
 
         const padding = options?.padding ?? 0.2;
+        const wanted = options?.nodes ? new Set(options.nodes) : null;
+        const subset = wanted ? nodes.filter(n => wanted.has(n.id)) : nodes;
+        if (subset.length === 0) return;
+        const zoomCap = Math.min(maxZoom, options?.maxZoom ?? maxZoom);
 
         let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        for (const node of nodes) {
+        for (const node of subset) {
             const w = node.width || 200;
             const h = node.height || 100;
             minX = Math.min(minX, node.position.x);
@@ -75,9 +82,9 @@ export const KGraphProvider: React.FC<KGraphProviderProps> = ({
         const zoom = Math.min(
             Math.max(availW / graphWidth, minZoom),
             Math.max(availH / graphHeight, minZoom),
-            maxZoom,
+            zoomCap,
         );
-        const clampedZoom = Math.min(Math.max(zoom, minZoom), maxZoom);
+        const clampedZoom = Math.min(Math.max(zoom, minZoom), zoomCap);
 
         const centerX = (minX + maxX) / 2;
         const centerY = (minY + maxY) / 2;

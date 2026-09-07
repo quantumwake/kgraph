@@ -150,12 +150,21 @@ export interface KGraphCanvasProps {
 // Context
 // ============================================================================
 
+export interface FitViewOptions {
+    /** Fraction of the container left empty on each side (default 0.2). */
+    padding?: number;
+    /** Frame only these node ids (default: every node). */
+    nodes?: string[];
+    /** Cap the resulting zoom (default: the canvas maxZoom). */
+    maxZoom?: number;
+}
+
 export interface KGraphContextValue {
     viewport: KGraphViewport;
     setViewport: React.Dispatch<React.SetStateAction<KGraphViewport>>;
     screenToCanvasPosition: (screenX: number, screenY: number) => { x: number; y: number };
     canvasToScreenPosition: (canvasX: number, canvasY: number) => { x: number; y: number };
-    fitView: (options?: { padding?: number }) => void;
+    fitView: (options?: FitViewOptions) => void;
     zoomIn: () => void;
     zoomOut: () => void;
     zoomTo: (level: number) => void;
