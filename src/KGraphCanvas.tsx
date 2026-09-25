@@ -43,8 +43,10 @@ const InnerCanvas: React.FC<InnerCanvasProps> = ({
     elementsSelectable = true,
     fitView: fitViewOnMount = false,
     showMiniMap = true,
+    miniMap,
     showBackground = true,
     backgroundGap = 32,
+    dotColor,
     minZoom = 0.1,
     maxZoom = 4,
     className = '',
@@ -393,7 +395,7 @@ const InnerCanvas: React.FC<InnerCanvasProps> = ({
         >
             {/* Background layer */}
             {showBackground && (
-                <DotGrid viewport={viewport} gap={backgroundGap} />
+                <DotGrid viewport={viewport} gap={backgroundGap} color={dotColor} />
             )}
 
             {/* SVG layer for edges */}
@@ -489,6 +491,7 @@ const InnerCanvas: React.FC<InnerCanvasProps> = ({
                     onViewportChange={setViewport}
                     containerWidth={containerSize.width}
                     containerHeight={containerSize.height}
+                    {...miniMap}
                 />
             )}
 

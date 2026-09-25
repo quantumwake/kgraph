@@ -137,13 +137,34 @@ export interface KGraphCanvasProps {
     elementsSelectable?: boolean;
     fitView?: boolean;
     showMiniMap?: boolean;
+    /**
+     * Colours for the minimap, for a host whose theme is not the library's
+     * default dark. Without this a themed app gets a dark slab in the
+     * corner of a light canvas, and its only way out is to hide a feature
+     * it wants (statefs.ai's overview, 2026-09-25).
+     */
+    miniMap?: MiniMapTheme;
     showBackground?: boolean;
     backgroundGap?: number;
+    /**
+     * Colour of the background dots. The default (white at 15%) suits the
+     * library's dark canvas and is invisible on a light one, so a themed
+     * host needs to say. NOT the canvas's own background — that is `style`.
+     */
+    dotColor?: string;
     minZoom?: number;
     maxZoom?: number;
     className?: string;
     style?: React.CSSProperties;
     children?: React.ReactNode;
+}
+
+/** The minimap's colours. Every field falls back to the library default. */
+export interface MiniMapTheme {
+    backgroundColor?: string;
+    borderColor?: string;
+    maskColor?: string;
+    nodeColor?: string | ((node: KGraphNode) => string);
 }
 
 // ============================================================================
